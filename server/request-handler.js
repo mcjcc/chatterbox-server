@@ -83,20 +83,19 @@ var requestHandler = function(request, response) {
     debugger;
     statusCode = 201;
     headers['Content-Type'] = 'application/JSON';
+    var str = '';
 
-    request.on('data', function (data) {
-      console.log('data', data);      
-      body.results.push(data);
-      // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
-
-      // if (body.length > 1e6) {
-      //   // FLOOD ATTACK OR FAULTY CLIENT, NUKE REQUEST
-      //   request.connection.destroy();
-      // }
+    request.on('data', function (chunk) {
+      // body.results.push(data);
+      // console.log('chunk', chunk);
+      str += chunk;
+      body.results.push(JSON.parse(str));
     });
-    response.writeHead(statusCode, headers);
+
+    response.writeHead(statusCode, headers);      
     response.end(JSON.stringify(body));
   } else {
+
     statusCode = 404;
     response.writeHead(statusCode, headers);
     response.end(JSON.stringify(body));
