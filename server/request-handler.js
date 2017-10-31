@@ -62,29 +62,46 @@ var defaultCorsHeaders = {
   'access-control-max-age': 10 // Seconds.
 };
 
+var body = { // requestHandler is the closure, results is available
+  results: []
+};
 
 var requestHandler = function(request, response) {
+  var statusCode = 404;
   var action = request.method; // store methods and determining on method, get info
   var headers = defaultCorsHeaders;
-  var body = {
-    results: []
-  };
-  
+  var pathName = '/classes/messages';
+
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
-  if (action === 'GET') { 
-    var statusCode = 200;
+  if (action === 'GET' && pathName === request.url) {
+    statusCode = 200;
     headers['Content-Type'] = 'application/JSON';
-    
     response.writeHead(statusCode, headers);
     response.end(JSON.stringify(body));
-  } else if (action === 'POST') {
-    var statusCode = 201;
+  } else if (action === 'POST' && pathName === request.url) {
+    debugger;
+    statusCode = 201;
     headers['Content-Type'] = 'application/JSON';
-    
+
+    request.on('data', function (data) {
+      console.log('data', data);      
+      body.results.push(data);
+      // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
+
+      // if (body.length > 1e6) {
+      //   // FLOOD ATTACK OR FAULTY CLIENT, NUKE REQUEST
+      //   request.connection.destroy();
+      // }
+    });
+    response.writeHead(statusCode, headers);
+    response.end(JSON.stringify(body));
+  } else {
+    statusCode = 404;
     response.writeHead(statusCode, headers);
     response.end(JSON.stringify(body));
   }
 };
+
 
 module.exports.requestHandler = requestHandler;
