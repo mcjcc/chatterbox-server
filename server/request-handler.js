@@ -74,20 +74,23 @@ var requestHandler = function(request, response) {
 
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
 
-  if (action === 'GET' && pathName === request.url) {
+  if ( action === 'OPTIONS' ) {
+    statusCode = 200;
+    response.writeHead(statusCode, headers);
+    response.end();
+  } else if ( action === 'GET' && pathName === request.url ) {
     statusCode = 200;
     headers['Content-Type'] = 'application/JSON';
     response.writeHead(statusCode, headers);
     response.end(JSON.stringify(body));
-  } else if (action === 'POST' && pathName === request.url) {
-    debugger;
+  } else if ( action === 'POST' && pathName === request.url ) {
+  
     statusCode = 201;
     headers['Content-Type'] = 'application/JSON';
     var str = '';
 
     request.on('data', function (chunk) {
-      // body.results.push(data);
-      // console.log('chunk', chunk);
+      
       str += chunk;
       body.results.push(JSON.parse(str));
     });
@@ -95,10 +98,10 @@ var requestHandler = function(request, response) {
     response.writeHead(statusCode, headers);      
     response.end(JSON.stringify(body));
   } else {
-
     statusCode = 404;
+    console.log('404 not found');
     response.writeHead(statusCode, headers);
-    response.end(JSON.stringify(body));
+    response.end();
   }
 };
 
